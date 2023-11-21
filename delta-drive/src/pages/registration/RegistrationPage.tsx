@@ -6,10 +6,21 @@ import * as Yup from 'yup';
 import { CustomInput } from '@/components';
 import { useQueryClient } from '@tanstack/react-query';
 import { UserRegistration } from '@/types';
+import { AxiosResponse } from 'axios';
+import { useRegisterUserMutation } from '@/services/user.service';
 
 export const RegistrationPage = () => {
   const [t] = useTranslation('common');
   const queryClient = useQueryClient();
+
+  const { mutate: register } = useRegisterUserMutation(queryClient, {
+    onSuccess: (response?: AxiosResponse) => {
+      alert(t('checkEmail'));
+    },
+    onError: () => {
+      console.log('ovde');
+    }
+  });
 
   const initialValues = {
     email: '',
@@ -37,6 +48,7 @@ export const RegistrationPage = () => {
       birthdayDate: values?.birthdayDate
     };
     console.log(payload);
+    register(payload);
   };
 
   return (

@@ -1,7 +1,30 @@
+using System.Net;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(
+        name: "CorsPolicy",
+        builder => builder.SetIsOriginAllowed(origin => true)
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials());
+});
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Listen(IPAddress.Loopback, 5019, listenOptions =>
+    {
+        listenOptions.UseHttps(); // This line enables HTTPS
+        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2;
+    });
+});
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+
+builder.Services.AddHttpClient("ServiceOneNotify");
 
 var app = builder.Build();
 
@@ -13,13 +36,10 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseCors("CorsPolicy");
 
 app.UseRouting();
-
-app.UseAuthorization();
-
-app.MapRazorPages();
+app.UseHttpsRedirection();
+app.UseStaticFiles();
 
 app.Run();
