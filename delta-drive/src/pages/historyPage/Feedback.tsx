@@ -1,12 +1,33 @@
-import { CustomNumberInput } from '@/components';
-import { FeedbackType } from '@/types';
+import { useTranslation } from 'react-i18next';
+import { AxiosResponse } from 'axios';
 import { Box, Button, FormLabel, Textarea, VStack } from '@chakra-ui/react';
 import { Field, Form, Formik } from 'formik';
-import { useTranslation } from 'react-i18next';
+import { useQueryClient } from '@tanstack/react-query';
 import * as Yup from 'yup';
 
-export const Feedback = () => {
+import { CustomNumberInput } from '@/components';
+import { useErrorToast, useSuccessToast } from '@/helpers';
+import { useSendFeedbackMutation } from '@/services';
+import { FeedbackType } from '@/types';
+
+interface FeedbackProps {
+  idVehicle: number;
+}
+
+export const Feedback = (props: FeedbackProps) => {
   const [t] = useTranslation('common');
+  const successToast = useSuccessToast();
+  const errorToast = useErrorToast();
+  const queryClient = useQueryClient();
+
+  const { mutate: sendFeedback } = useSendFeedbackMutation(queryClient, {
+    onSuccess: (response?: AxiosResponse) => {
+      successToast({ title: t('successfulEditUser', { response }) });
+    },
+    onError: () => {
+      errorToast({ title: t('unsuccessfulEditUser') });
+    }
+  });
 
   const initialValues = {
     comment: '',
@@ -15,15 +36,17 @@ export const Feedback = () => {
 
   const registrtionSchema = Yup.object().shape({
     comment: Yup.string(),
-    rating: Yup.number().required().max(5, t('max5')).min(1, t('min1'))
+    rating: Yup.number().required('ratingRequired').max(5, t('max5')).min(1, t('min1'))
   });
 
   const handleSubmit = (values: FeedbackType) => {
     const payload = {
       comment: values?.comment,
-      rating: values?.rating
+      rating: values?.rating,
+      idVehicle: props.idVehicle
     };
-    console.log(values);
+    console.log(payload);
+    //sendFeedback(payload);
   };
 
   return (
@@ -40,13 +63,16 @@ export const Feedback = () => {
             initialValues={initialValues}
             validationSchema={registrtionSchema}
             onSubmit={handleSubmit}>
-            {({ errors, touched }) => (
+            {({ errors, touched, setFieldValue }) => (
               <Form>
                 <FormLabel>{t('addComment')}</FormLabel>
                 <Field name='comment' as={Textarea} />
                 <CustomNumberInput
                   name='rating'
                   label={t('rating')}
+                  max={5}
+                  min={1}
+                  onChange={(changeEvent: string) => setFieldValue('rating', changeEvent)}
                   error={errors.rating}
                   isInvalid={!!errors.rating && touched.rating}
                 />
@@ -55,6 +81,7 @@ export const Feedback = () => {
                   minW='100px'
                   size='lg'
                   top='15px'
+                  textColor='white'
                   bg='blue.600'
                   _hover={{bg: 'blue.400'}}
                   ml={3}

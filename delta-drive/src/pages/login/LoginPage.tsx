@@ -1,13 +1,13 @@
 import { useContext, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { Box, Button, FormControl, FormErrorMessage, VStack } from '@chakra-ui/react';
 import { Form, Formik } from 'formik';
 import * as Yup from 'yup';
 
 import { CustomInput } from '@/components';
-import { LoginType } from '@/types';
-import { useNavigate } from 'react-router-dom';
 import { UserContext } from '@/contexts';
+import { LoginType } from '@/types';
 
 export const LoginPage = () => {
   const [t] = useTranslation('common');
@@ -23,7 +23,7 @@ export const LoginPage = () => {
   };
 
   const loginSchema = Yup.object().shape({
-    email: Yup.string().email(t('emailInvalid')).required('emailRequired'),
+    email: Yup.string().email(t('emailInvalid')).required(t('emailRequired')),
     password: Yup.string().required(t('passRequired'))
   });
 
@@ -78,6 +78,7 @@ export const LoginPage = () => {
                 minW='100px'
                 size='lg'
                 top='15px'
+                textColor='white'
                 bg='blue.600'
                 _hover={{bg: 'blue.400'}}
                 ml='35%'

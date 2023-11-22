@@ -1,13 +1,13 @@
 import { useTranslation } from 'react-i18next';
+import { AxiosResponse } from 'axios';
 import { Box, Button, VStack } from '@chakra-ui/react';
 import { Form, Formik } from 'formik';
+import { useQueryClient } from '@tanstack/react-query';
 import * as Yup from 'yup';
 
 import { CustomInput } from '@/components';
-import { useQueryClient } from '@tanstack/react-query';
 import { UserRegistration } from '@/types';
-import { AxiosResponse } from 'axios';
-import { useRegisterUserMutation } from '@/services/user.service';
+import { useRegisterUserMutation } from '@/services';
 
 export const RegistrationPage = () => {
   const [t] = useTranslation('common');
@@ -32,7 +32,7 @@ export const RegistrationPage = () => {
   };
 
   const registrtionSchema = Yup.object().shape({
-    email: Yup.string().email(t('emailInvalid')).required('emailRequired'),
+    email: Yup.string().email(t('emailInvalid')).required(t('emailRequired')),
     password: Yup.string().required(t('passRequired')),
     confirmPassword: Yup.string().oneOf([Yup.ref('password'), null], t('passMatch')).required(t('passRequired')),
     firstName: Yup.string().required(t('firstNameRequired')),
@@ -71,30 +71,40 @@ export const RegistrationPage = () => {
                 maxLength={50}
                 name='email'
                 label={t('email')}
+                error={errors.email}
+                isInvalid={!!errors.email && touched.email}
               />
               <CustomInput
                 type='password'
                 maxLength={50}
                 name='password'
                 label={t('password')}
+                error={errors.password}
+                isInvalid={!!errors.password && touched.password}
               />
               <CustomInput
                 type='password'
                 maxLength={50}
                 name='confirmPassword'
                 label={t('confirmPassword')}
+                error={errors.confirmPassword}
+                isInvalid={!!errors.confirmPassword && touched.confirmPassword}
               />
               <CustomInput
                 type='text'
                 maxLength={50}
                 name='firstName'
                 label={t('firstName')}
+                error={errors.firstName}
+                isInvalid={!!errors.firstName && touched.firstName}
               />
               <CustomInput
                 type='text'
                 maxLength={50}
                 name='lastName'
                 label={t('lastName')}
+                error={errors.lastName}
+                isInvalid={!!errors.lastName && touched.lastName}
               />
               <CustomInput
                 type='date'
@@ -107,6 +117,7 @@ export const RegistrationPage = () => {
                 minW='100px'
                 size='lg'
                 top='15px'
+                textColor='white'
                 bg='blue.600'
                 _hover={{bg: 'blue.400'}}
                 ml={3}

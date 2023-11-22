@@ -1,7 +1,8 @@
+import axios from 'axios';
+import { QueryClient, useMutation } from '@tanstack/react-query';
+
 import { apiUrl } from '@/helpers';
 import { Options, UserRegistration } from '@/types';
-import { QueryClient, useMutation } from '@tanstack/react-query';
-import axios from 'axios';
 
 const USER_API_URL = '/v1/user';
 

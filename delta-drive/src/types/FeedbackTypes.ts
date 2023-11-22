@@ -1,4 +1,4 @@
 export type FeedbackType = {
-    comment: string;
-    rating: number;
+  comment: string;
+  rating: number;
 };

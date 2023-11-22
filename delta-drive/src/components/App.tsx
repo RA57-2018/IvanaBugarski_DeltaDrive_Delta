@@ -1,13 +1,12 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { useContext } from 'react';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 import { Layout } from './common/Layout';
+import { UserContext } from '@/contexts/UserProvider';
 import {
-  Feedback,
   HistoryPage,
   HomePage, LoginPage, RegistrationPage
 } from '@/pages';
-import { useContext } from 'react';
-import { UserContext } from '@/contexts/UserProvider';
 
 export const App = () => {
   const { currentUser } = useContext(UserContext);
@@ -17,7 +16,6 @@ export const App = () => {
     <Layout>
       <Routes>
         <Route>
-          <Route path='/feedback' element={<Feedback />} />
           <Route path='/homePage' element={<HomePage />} />
           <Route path='/loginPage' element={<LoginPage />} />
           <Route path='/registrationPage' element={<RegistrationPage />} />
