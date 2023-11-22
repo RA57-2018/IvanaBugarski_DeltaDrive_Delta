@@ -16,20 +16,49 @@ namespace DeltaDrive.Controllers
         }
 
         [HttpPost("registration")]
-        public IActionResult Post(RegistrationDTO registrationDTO)
+        public async Task<IActionResult> RegisterAsync(RegistrationDTO registrationDTO)
         {
             try
             {
-                if (userService.registration(registrationDTO))
+                var registeredUser = await userService.RegisterAsync(registrationDTO);
+
+                if (registeredUser != null)
                 {
-                    Console.WriteLine("Registration successfull");
+                    return Ok(registeredUser);
+                }
+                else
+                {
+                    return BadRequest("User registration failed");
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine("Error");
+                return BadRequest(ex.Message);
             }
-            return Ok(true);
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> LoginUserAsync(UserLoginDTO login)
+        {
+            try
+            {
+                var loginResult = await userService.LoginUser(login);
+
+                if (loginResult != null)
+                {
+                    return Ok(loginResult);
+                }
+                else
+                {
+                    return BadRequest(loginResult);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+                return StatusCode(500, "Internal server error");
+            }
         }
     }
+}
 }

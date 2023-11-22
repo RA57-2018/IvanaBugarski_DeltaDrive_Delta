@@ -1,7 +1,12 @@
 import { useTranslation } from 'react-i18next';
+import { AxiosResponse } from 'axios';
 import { Button, Grid, GridItem, Text as Info } from '@chakra-ui/react';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { Feedback } from '@/pages';
+import { useErrorToast, useSuccessToast } from '@/helpers';
+import { useBookVehicleMutation } from '@/services';
+import { BookVehicleType } from '@/types';
 
 interface VehicleProps {
   isHistory: boolean;
@@ -10,6 +15,19 @@ interface VehicleProps {
 
 export const VehicleComponent = (props: VehicleProps) => {
   const [t] = useTranslation('common');
+  const successToast = useSuccessToast();
+  const errorToast = useErrorToast();
+  const queryClient = useQueryClient();
+  const currentUser = '';
+
+  const { mutate: bookVehicle } = useBookVehicleMutation(queryClient, {
+    onSuccess: (response?: AxiosResponse) => {
+      successToast({ title: t('successfulEditUser', { response }) });
+    },
+    onError: () => {
+      errorToast({ title: t('unsuccessfulEditUser') });
+    }
+  });
 
   const historyData = [
     {
@@ -37,8 +55,17 @@ export const VehicleComponent = (props: VehicleProps) => {
 
   const vehicleData = props.data.slice(0, 10);
 
-  const handleBookVehicle = (idVehicle: number) => {
-    console.log('You successfully booked vehicle!' + idVehicle);
+  let bookDate;
+
+  const handleBookVehicle = (values: BookVehicleType) => {
+    console.log('You successfully booked vehicle!' + values.idVehicle);
+    const payload = {
+      idVehicle: values.idVehicle,
+      currentUser: values.currentUser
+    };
+    bookDate = new Date;
+    console.log(payload, bookDate);
+    //bookVehicle(payload);
   };
 
   //kod feedbacka se salje id bas nemoj preko indeksa da ides (kad povezes sa back-om)
@@ -103,7 +130,7 @@ export const VehicleComponent = (props: VehicleProps) => {
               ml={3}
               mb={3}
               cursor='pointer'
-              onClick={() => handleBookVehicle(index)}>
+              onClick={() => handleBookVehicle({idVehicle: vehicle.id, currentUser})}>
               {t('bookVehicle')}
             </Button>
           </GridItem>
