@@ -1,25 +1,27 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Marker, MapContainer, TileLayer, Popup } from 'react-leaflet';
+import { Marker, MapContainer, TileLayer, Popup, Polyline } from 'react-leaflet';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, Text as Info } from '@chakra-ui/react';
 import L from 'leaflet';
 
 import { VehicleComponent } from '@/components';
-import { DefaultIcon, RedIcon, VehicleIcon, calculateDistance } from '@/helpers';
+import { DefaultMarkerIcon, RedMarkerIcon, VehicleMarkerIcon, calculateDistance } from '@/helpers';
 
 export const HomePage = () => {
   const [t] = useTranslation('common');
   const navigate = useNavigate();
-  const [position, setPosition] = useState({ lat: 45.2428032, lng: 19.849218322071287 });
-  const [path, setPath] = useState<Array<[number, number]>>([]);
+  const destinationMarkerRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
   const mapRef = useRef<any>(null);
+  const [destination, setDestination] = useState({lat: 45.255930, lng: 19.846320});
+  const [nearestAvailableVehicles, setNearestAvailableVehicles] = useState<any>();
+  const [position, setPosition] = useState({ lat: 45.2428032, lng: 19.849218322071287 });
+
+  L.Marker.prototype.options.icon = DefaultMarkerIcon;
   const myAPIKey = 'b6618ad7359b4f779daeae7e35233c67';
   const isSearched = false;
   //const orsApiKey = '5b3ce3597851110001cf6248e367516454a345f48b0ed339fd4612c3';
-  const [destination, setDestination] = useState({lat: 45.255930, lng: 19.846320});
-  const destinationMarkerRef = useRef<any>(null);
 
   const csvData = [
     {brand: 'Audi', firstName: 'Allison', lastName: 'Royden', latitude: '45.21645414007418', longitude: '19.848281178208055', available: false, startPrice: '10.405094574404158EUR', pricePerKM: '1.5237046745427651EUR'},
@@ -62,8 +64,6 @@ export const HomePage = () => {
     { brand: 'Volvo', firstName: 'Jessa', lastName: 'Tetiana', latitude: '45.22820856361037', longitude: '19.86479493022796', startPrice: '4.989849053623997EUR', pricePerKM: '1.4501630881251706EUR', available: true },
   ];
 
-  L.Marker.prototype.options.icon = DefaultIcon;
-
   const eventHandlers = useMemo(
     () => ({
       dragend() {
@@ -71,7 +71,6 @@ export const HomePage = () => {
         if (marker !== null) {
           const markerPosition = marker.getLatLng();
           setPosition(markerPosition);
-          setPath((prevPath) => [...prevPath, [markerPosition.lat, markerPosition.lng]]);
         }
       },
     }),
@@ -84,9 +83,13 @@ export const HomePage = () => {
       if (marker !== null) {
         const destinationPosition = marker.getLatLng();
         setDestination(destinationPosition);
+        const userLatLng = L.latLng(position.lat, position.lng);
+        const destinationLatLng = L.latLng(destinationPosition.lat, destinationPosition.lng);
+        const distance = userLatLng.distanceTo(destinationLatLng);
+        console.log('Distance to destination:', distance);
       }
     },
-  }), []);
+  }), [position]);
 
   useEffect(() => {
     if (position) {
@@ -94,7 +97,7 @@ export const HomePage = () => {
       fetch(reverseGeocodingUrl)
         .then((result) => result.json())
         .then((featureCollection) => {
-          // console.log(featureCollection.features[0].properties);
+          //console.log(featureCollection.features[0].properties);
         })
         .catch((reverseGeocodingError) => {
           console.error('Error in reverse geocoding:', reverseGeocodingError);
@@ -108,7 +111,6 @@ export const HomePage = () => {
         (geoPosition) => {
           const { latitude, longitude } = geoPosition.coords;
           setPosition({ lat: latitude, lng: longitude });
-          console.log(position);
         },
         (error) => {
           console.error('Error getting location:', error);
@@ -120,31 +122,32 @@ export const HomePage = () => {
     }
   }, []);
 
-  const totalDistance = calculateDistance(path);
-  console.log('Total Distance:', totalDistance, 'm');
-  const [nearestAvailableVehicles, setNearestAvailableVehicles] = useState<any>();
+  const calculateTotalPriceForVehicles = (currentLatLng: any, destinationLatLng: any, vehicles: any) => {
+    const distance = calculateDistance(currentLatLng, destinationLatLng);
+    const vehiclesTotalPrices = vehicles.map((data: any) => {
+      const totalPrice = parseFloat(data.startPrice) + parseFloat(data.pricePerKM) * distance;
+      return { ...data, totalPrice };
+    });
+    return vehiclesTotalPrices;
+  };
 
   const getNearestAvailableVehicles = () => {
-    const userLatLng = L.latLng(position.lat, position.lng);
+    const currentLatLng = { lat: position.lat, lng: position.lng };
+    const destinationLatLng = { lat: destination.lat, lng: destination.lng };
     const availableVehicles = csvData.filter((data) => data.available === true);
-    const vehiclesWithDistances = availableVehicles.map((data) => {
-      const vehicleLatLng = L.latLng(parseFloat(data.latitude), parseFloat(data.longitude));
-      const distance = userLatLng.distanceTo(vehicleLatLng);
-      const totalPrice = parseFloat(data.startPrice) + parseFloat(data.pricePerKM) * distance / 1000;
-      console.log(totalPrice);
-      return { ...data, distance, totalPrice };
-    });
+    const vehiclesTotalPrices = calculateTotalPriceForVehicles(
+      currentLatLng,
+      destinationLatLng,
+      availableVehicles
+    );
     setNearestAvailableVehicles(
-      vehiclesWithDistances
-        .sort((a, b) => a.distance - b.distance)
+      vehiclesTotalPrices
+        .sort((a: any, b: any) => a.totalPrice - b.totalPrice)
         .slice(0, 10)
     );
   };
 
-  console.log(nearestAvailableVehicles);
-
   useEffect(() => {
-    console.log(destination);
     if (destination) {
       getNearestAvailableVehicles();
     }
@@ -185,7 +188,7 @@ export const HomePage = () => {
               position={destination}
               eventHandlers={destinationEventHandlers}
               ref={destinationMarkerRef}
-              icon={RedIcon}
+              icon={RedMarkerIcon}
             />
           )}
           {nearestAvailableVehicles &&
@@ -193,7 +196,7 @@ export const HomePage = () => {
               <Marker
                 key={index}
                 position={[parseFloat(data.latitude), parseFloat(data.longitude)]}
-                icon={VehicleIcon}>
+                icon={VehicleMarkerIcon}>
                 <Popup>
                   <Box>
                     <Info>{t('brand')}: {data.brand}</Info>
