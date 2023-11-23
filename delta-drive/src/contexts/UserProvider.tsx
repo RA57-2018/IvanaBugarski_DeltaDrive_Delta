@@ -1,6 +1,7 @@
 import React, { createContext, useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 
+import { usersApi } from '@/services';
 import { CurrentUser } from '@/types';
 
 const initialContext: {
@@ -44,8 +45,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
               return;
             }
             tokenRef.current = null;
-            // const res = await usersApi.refreshToken(refreshToken);
-            // localStorage['accessToken'] = tokenRef.current = res.data.access;
+            const res = await usersApi.refreshToken(refreshToken);
+            localStorage['accessToken'] = tokenRef.current = res.data.access;
           }
           config.headers.Authorization = `Bearer ${tokenRef.current}`;
         }
@@ -57,13 +58,13 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     try {
-      // const res = await usersApi.token(email, password);
-      // const { access, refresh, user } = res.data.value;
-      // localStorage.setItem('accessToken', access);
-      // localStorage.setItem('refreshToken', refresh);
-      // localStorage.setItem('currentUser', JSON.stringify(user));
-      // tokenRef.current = access;
-      //setCurrentUser(user);
+      const res = await usersApi.token(email, password);
+      const { access, refresh, user } = res.data.value;
+      localStorage.setItem('accessToken', access);
+      localStorage.setItem('refreshToken', refresh);
+      localStorage.setItem('currentUser', JSON.stringify(user));
+      tokenRef.current = access;
+      setCurrentUser(user);
       setLoggedIn(true);
     } catch (error) {
       throw error;

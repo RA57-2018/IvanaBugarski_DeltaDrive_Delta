@@ -7,6 +7,7 @@
         public int Rating { get; set; }
         public Boolean IsDeleted { get; set; }
 
+        public Comment() { }
         public Comment(int rating, String content)
         {
             Rating = rating;

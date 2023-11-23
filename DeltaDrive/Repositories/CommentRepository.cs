@@ -15,7 +15,12 @@ namespace DeltaDrive.Repositories
 
         public async Task<Comment> AddCommentAsync(Comment comment)
         {
-            _dbContext.Comments.Add(comment);
+            Comment newComment = new Comment();
+            newComment.Id = 1;
+            newComment.Content = comment.Content;
+            newComment.Rating = comment.Rating;
+            newComment.IsDeleted = false;
+            _dbContext.Comments.Add(newComment);
             await _dbContext.SaveChangesAsync();
             return comment;
         }

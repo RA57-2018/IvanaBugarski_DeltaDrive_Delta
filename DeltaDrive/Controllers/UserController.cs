@@ -1,4 +1,5 @@
 ﻿using DeltaDrive.Dto;
+using DeltaDrive.Models;
 using DeltaDrive.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -37,28 +38,11 @@ namespace DeltaDrive.Controllers
             }
         }
 
-        [HttpPost("login")]
-        public async Task<IActionResult> LoginUserAsync(UserLoginDTO login)
+        [HttpPost("token")]
+        public async Task<IActionResult> GetToken([FromBody] UserLoginDTO userDto)
         {
-            try
-            {
-                var loginResult = await userService.LoginUser(login);
-
-                if (loginResult != null)
-                {
-                    return Ok(loginResult);
-                }
-                else
-                {
-                    return BadRequest(loginResult);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error: {ex.Message}");
-                return StatusCode(500, "Internal server error");
-            }
+            var user = await userService.LoginUser(userDto);
+            return Ok(user);
         }
     }
-}
 }

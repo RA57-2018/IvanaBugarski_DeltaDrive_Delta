@@ -165,6 +165,7 @@ export const HomePage = () => {
         justifyContent='center'
         mt='5'
         mb='5'>
+        <Info fontSize={'x-large'}>{t('homePageMessage')}</Info>
         <MapContainer
           id='chooseLocation'
           center={position}

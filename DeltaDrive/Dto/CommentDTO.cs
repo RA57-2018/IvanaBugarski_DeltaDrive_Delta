@@ -2,7 +2,7 @@
 {
     public class CommentDTO
     {
-        public String Content;
-        public int Rating;
+        public String Content { get; set; }
+        public int Rating { get; set; }
     }
 }

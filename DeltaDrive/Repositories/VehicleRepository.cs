@@ -28,7 +28,7 @@ namespace DeltaDrive.Repositories
 
         public async Task<IEnumerable<Ride>> GetHistoryAsync()
         {
-            IEnumerable<Ride> ride = await _dbContext.Ride.ToListAsync();
+            IEnumerable<Ride> ride = await _dbContext.Rides.ToListAsync();
             return ride;
         }
 
