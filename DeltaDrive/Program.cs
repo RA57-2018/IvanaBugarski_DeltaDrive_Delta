@@ -3,19 +3,19 @@ using DeltaDrive.Interfaces.Repositories;
 using DeltaDrive.Interfaces.Services;
 using DeltaDrive.Repositories;
 using DeltaDrive.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(
-        name: "CorsPolicy",
-        builder => builder
-            .SetIsOriginAllowed(origin => true)
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials());
+    options.AddPolicy("AllowAll",
+        builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -48,22 +48,27 @@ var app = builder.Build();
 // Exception handling for service construction
 try
 {
-    // Configure the HTTP request pipeline.
-    if (!app.Environment.IsDevelopment())
+    var env = app.Environment;
+
+    if (env.IsDevelopment())
+    {
+        app.UseDeveloperExceptionPage();
+    }
+    else
     {
         app.UseExceptionHandler("/Error");
-        // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
         app.UseHsts();
     }
 
-    app.UseCors("CorsPolicy");
+    app.UseCors("AllowAll");
 
     app.UseRouting();
-    // Comment out the following line to disable HTTPS redirection
+
+    // Uncomment the following line to enable HTTPS redirection in production
     // app.UseHttpsRedirection();
+
     app.UseStaticFiles();
 
-    // Add this line to enable MVC routes
     app.UseAuthorization();
 
     app.UseEndpoints(endpoints =>

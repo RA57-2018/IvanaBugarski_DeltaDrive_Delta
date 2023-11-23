@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace DeltaDrive.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class VehicleController : ControllerBase
     {
         private readonly ICommentService _commentService;
@@ -84,6 +84,7 @@ namespace DeltaDrive.Controllers
         [HttpPost("/sendFeedback")]
         public async Task<IActionResult> AddCommentAsync([FromBody] CommentDTO request)
         {
+            Console.WriteLine($"Received request");
             try
             {
                 var comment = await _commentService.AddCommentAsync(request.Rating, request.Content);

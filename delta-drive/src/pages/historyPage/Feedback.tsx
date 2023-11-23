@@ -24,29 +24,30 @@ export const Feedback = (props: FeedbackProps) => {
     onSuccess: (response?: AxiosResponse) => {
       successToast({ title: t('successfulEditUser', { response }) });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Error sending feedback:', error);
       errorToast({ title: t('unsuccessfulEditUser') });
     }
   });
 
   const initialValues = {
-    comment: '',
+    content: '',
     rating: 0
   };
 
   const registrtionSchema = Yup.object().shape({
-    comment: Yup.string(),
+    content: Yup.string(),
     rating: Yup.number().required('ratingRequired').max(5, t('max5')).min(1, t('min1'))
   });
 
   const handleSubmit = (values: FeedbackType) => {
     const payload = {
-      comment: values?.comment,
+      content: values?.content,
       rating: values?.rating,
-      idVehicle: props.idVehicle
+      //idVehicle: props.idVehicle
     };
     console.log(payload);
-    //sendFeedback(payload);
+    sendFeedback(payload);
   };
 
   return (
@@ -66,13 +67,13 @@ export const Feedback = (props: FeedbackProps) => {
             {({ errors, touched, setFieldValue }) => (
               <Form>
                 <FormLabel>{t('addComment')}</FormLabel>
-                <Field name='comment' as={Textarea} />
+                <Field name='content' as={Textarea} />
                 <CustomNumberInput
                   name='rating'
                   label={t('rating')}
                   max={5}
                   min={1}
-                  onChange={(changeEvent: string) => setFieldValue('rating', changeEvent)}
+                  onChange={(changeEvent: string) => setFieldValue('rating', Number(changeEvent))}
                   error={errors.rating}
                   isInvalid={!!errors.rating && touched.rating}
                 />
