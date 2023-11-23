@@ -4,18 +4,16 @@ import { QueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { apiUrl } from '@/helpers';
 import { Options, UserRegistration } from '@/types';
 
-const USER_API_URL = '/v1/user';
-
 const USER_QUERY_KEY = 'user';
 const TOKEN_QUERY_KEY = 'token';
 const TOKEN_REFRESH_QUERY_KEY = 'token-refresh';
 
 export const usersApi = {
   token: (email: string, pass: string) =>
-    axios.post(`${apiUrl()}${USER_API_URL}/token`, { email: email, password: pass }),
-  register: (payload: UserRegistration) => axios.post(`${apiUrl()}${USER_API_URL}/registration`, payload),
+    axios.post(`${apiUrl()}/token`, { email: email, password: pass }),
+  register: (payload: UserRegistration) => axios.post(`${apiUrl()}/registration`, payload),
   refreshToken: (refreshToken: string) =>
-    axios.post(`${apiUrl()}${USER_API_URL}/refreshToken`, { refresh: refreshToken }),
+    axios.post(`${apiUrl()}/refreshToken`, { refresh: refreshToken }),
 };
 
 export const useGetTokenQuery = (email: string, pass: string, enabled: boolean) => {

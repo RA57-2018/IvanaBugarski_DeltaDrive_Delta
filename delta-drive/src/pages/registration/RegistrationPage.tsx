@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { AxiosResponse } from 'axios';
 import { Box, Button, VStack } from '@chakra-ui/react';
+import { format } from 'date-fns';
 import { Form, Formik } from 'formik';
 import { useQueryClient } from '@tanstack/react-query';
 import * as Yup from 'yup';
@@ -8,17 +9,20 @@ import * as Yup from 'yup';
 import { CustomInput } from '@/components';
 import { UserRegistration } from '@/types';
 import { useRegisterUserMutation } from '@/services';
+import { useErrorToast, useSuccessToast } from '@/helpers';
 
 export const RegistrationPage = () => {
   const [t] = useTranslation('common');
+  const successToast = useSuccessToast();
+  const errorToast = useErrorToast();
   const queryClient = useQueryClient();
 
   const { mutate: register } = useRegisterUserMutation(queryClient, {
     onSuccess: (response?: AxiosResponse) => {
-      alert(t('checkEmail'));
+      successToast({ title: t('successfulEditUser', { response }) });
     },
     onError: () => {
-      console.log('ovde');
+      errorToast({ title: t('unsuccessfulEditUser') });
     }
   });
 
@@ -32,20 +36,17 @@ export const RegistrationPage = () => {
   };
 
   const registrtionSchema = Yup.object().shape({
-    email: Yup.string().email(t('emailInvalid')).required(t('emailRequired')),
-    password: Yup.string().required(t('passRequired')),
-    confirmPassword: Yup.string().oneOf([Yup.ref('password'), null], t('passMatch')).required(t('passRequired')),
-    firstName: Yup.string().required(t('firstNameRequired')),
-    lastName: Yup.string().required(t('lastNameRequired'))
+    email: Yup.string().email(t('emailInvalid'))
   });
 
   const handleSubmit = (values: UserRegistration) => {
+    const formattedDate = format(new Date(values?.birthdayDate), 'yyyy-MM-dd 12:00:00.123456+00');
     const payload = {
       email: values?.email,
       password: values?.password,
       firstName: values?.firstName,
       lastName: values?.lastName,
-      birthdayDate: values?.birthdayDate
+      birthdayDate: new Date(formattedDate)
     };
     console.log(payload);
     register(payload);

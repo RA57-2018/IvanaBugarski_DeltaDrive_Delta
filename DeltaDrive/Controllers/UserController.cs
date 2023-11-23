@@ -1,6 +1,5 @@
 ﻿using DeltaDrive.Dto;
-using DeltaDrive.Models;
-using DeltaDrive.Services;
+using DeltaDrive.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DeltaDrive.Controllers
@@ -9,19 +8,19 @@ namespace DeltaDrive.Controllers
     [Route("[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly UserService userService;
+        private readonly IUserService _userService;
 
-        public UserController(UserService userService)
+        public UserController(IUserService userService)
         {
-            this.userService = userService;
+            this._userService = userService;
         }
 
-        [HttpPost("registration")]
-        public async Task<IActionResult> RegisterAsync(RegistrationDTO registrationDTO)
+        [HttpPost("/registration")]
+        public async Task<IActionResult> RegisterAsync([FromBody] RegistrationDTO registrationDTO)
         {
             try
             {
-                var registeredUser = await userService.RegisterAsync(registrationDTO);
+                var registeredUser = await _userService.RegisterAsync(registrationDTO);
 
                 if (registeredUser != null)
                 {
@@ -38,10 +37,10 @@ namespace DeltaDrive.Controllers
             }
         }
 
-        [HttpPost("token")]
+        [HttpPost("/token")]
         public async Task<IActionResult> GetToken([FromBody] UserLoginDTO userDto)
         {
-            var user = await userService.LoginUser(userDto);
+            var user = await _userService.LoginUser(userDto);
             return Ok(user);
         }
     }

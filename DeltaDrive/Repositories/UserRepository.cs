@@ -35,14 +35,7 @@ namespace DeltaDrive.Repositories
             };
 
             User savedUser = (await _dbContext.Users.AddAsync(newUser)).Entity;
-            try
-            {
-                await _dbContext.SaveChangesAsync();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Failed to save user: " + e.Message);
-            }
+            await _dbContext.SaveChangesAsync();
 
             return savedUser;
         }

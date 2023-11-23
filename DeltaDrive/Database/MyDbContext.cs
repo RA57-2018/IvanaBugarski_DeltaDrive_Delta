@@ -32,5 +32,14 @@ namespace DeltaDrive.Database
 
             base.OnModelCreating(modelBuilder);
         }
+        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+        {
+            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
+
+        public override int SaveChanges(bool acceptAllChangesOnSuccess)
+        {
+            return base.SaveChanges(acceptAllChangesOnSuccess);
+        }
     }
 }
