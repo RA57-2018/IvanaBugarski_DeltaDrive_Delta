@@ -1,21 +1,27 @@
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Marker, MapContainer, TileLayer, Popup } from 'react-leaflet';
-import { useNavigate } from 'react-router-dom';
 import { AxiosResponse } from 'axios';
 import { Box, Button, Grid, GridItem, Text as Info } from '@chakra-ui/react';
 import L from 'leaflet';
-import { HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
+//import { HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { UserContext } from '@/contexts';
-import { DefaultMarkerIcon, RedMarkerIcon, VehicleMarkerIcon, calculateDistance, initialAxiosResponse, useErrorToast, useSuccessToast } from '@/helpers';
+import {
+  DefaultMarkerIcon,
+  RedMarkerIcon,
+  VehicleMarkerIcon,
+  calculateDistance,
+  initialAxiosResponse,
+  useErrorToast,
+  useSuccessToast
+} from '@/helpers';
 import { useBookVehicleMutation, useGetAllVehiclesQuery } from '@/services';
 import { BookVehicleType } from '@/types';
 
 export const HomePage = () => {
   const [t] = useTranslation('common');
-  const navigate = useNavigate();
   const destinationMarkerRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
   const mapRef = useRef<any>(null);
@@ -24,8 +30,8 @@ export const HomePage = () => {
   const [position, setPosition] = useState({ lat: 45.2428032, lng: 19.849218322071287 });
   const [currentLocationAddress, setCurrentLocationAddress] = useState('');
   const [destinationAddress, setDestinationAddress] = useState('');
-  const [signalRConnection, setSignalRConnection] = useState<any>(null);
-  const [connection, setConnection] = useState<any>(null);
+  // const [signalRConnection, setSignalRConnection] = useState<any>(null);
+  // const [connection, setConnection] = useState<any>(null);
   const { currentUser } = useContext(UserContext);
   const successToast = useSuccessToast();
   const errorToast = useErrorToast();
@@ -109,7 +115,6 @@ export const HomePage = () => {
       fetch(reverseGeocodingUrl)
         .then((result) => result.json())
         .then((featureCollection) => {
-          //console.log(featureCollection.features[0].properties);
         })
         .catch((reverseGeocodingError) => {
           console.error('Error in reverse geocoding:', reverseGeocodingError);
