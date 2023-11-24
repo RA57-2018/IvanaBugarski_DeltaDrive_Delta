@@ -47,10 +47,10 @@ namespace DeltaDrive.Controllers
             }
         }
 
-        [HttpGet("/getHistory")]
-        public async Task<IEnumerable<Ride>> GetHistoryAsync()
+        [HttpGet("/getHistory/{id}")]
+        public async Task<IEnumerable<Ride>> GetHistoryAsync(String id)
         {
-            IEnumerable<Ride> ride = await _vehicleService.GetHistoryAsync();
+            IEnumerable<Ride> ride = await _vehicleService.GetHistoryAsync(id);
             return ride;
         }
 

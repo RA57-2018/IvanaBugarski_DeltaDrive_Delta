@@ -32,7 +32,8 @@ export const Feedback = (props: FeedbackProps) => {
 
   const initialValues = {
     content: '',
-    rating: 0
+    rating: 0,
+    id: 1
   };
 
   const registrtionSchema = Yup.object().shape({
@@ -44,7 +45,7 @@ export const Feedback = (props: FeedbackProps) => {
     const payload = {
       content: values?.content,
       rating: values?.rating,
-      //idVehicle: props.idVehicle
+      id: props.idVehicle
     };
     console.log(payload);
     sendFeedback(payload);

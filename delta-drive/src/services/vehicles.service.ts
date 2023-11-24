@@ -11,7 +11,7 @@ export const vehiclesApi = {
   approveBookVehicle: (payload: BookVehicleType) => axios.post(`${apiUrl()}/approveBookVehicle`, payload),
   bookVehicle: (payload: BookVehicleType) => axios.post(`${apiUrl()}/bookVehicle`, payload),
   getAllVehicles: () => axios.get(`${apiUrl()}/getAllVehicles`),
-  getHistoryData: () => axios.get(`${apiUrl()}/getHistory`),
+  getHistoryData: (id: string) => axios.get(`${apiUrl()}/getHistory/${id}`),
   getVehiclesById: (id: string) => axios.get(`${apiUrl()}/getVehiclesById/${id}`),
   sendFeedback: (payload: FeedbackType) => axios.post(`${apiUrl()}/sendFeedback`, payload)
 };
@@ -32,8 +32,8 @@ export const useGetAllVehiclesQuery = () => {
   return useQuery([VEHICLE_QUERY_KEY], vehiclesApi.getAllVehicles);
 };
 
-export const useGetHistoryDataQuery = () => {
-  return useQuery([VEHICLE_QUERY_KEY], vehiclesApi.getHistoryData);
+export const useGetHistoryDataQuery = (id: string) => {
+  return useQuery([VEHICLE_QUERY_KEY], () => vehiclesApi.getHistoryData(id), {enabled: !!id});
 };
 
 export const useGetVehiclesById = (id: string) => {

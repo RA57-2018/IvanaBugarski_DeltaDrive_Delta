@@ -26,21 +26,35 @@ namespace DeltaDrive.Repositories
             return await _dbContext.Vehicles.Where(x => x.Id == id && !x.IsDeleted).FirstOrDefaultAsync();
         }
 
-        public async Task<IEnumerable<Ride>> GetHistoryAsync()
+        public async Task<IEnumerable<Ride>> GetHistoryAsync(String id)
         {
-            IEnumerable<Ride> ride = await _dbContext.Rides.ToListAsync();
+            IEnumerable<Ride> ride = await _dbContext.Rides.Where(x => x.UserId == id).ToListAsync();
             return ride;
         }
 
-        public async Task<Vehicle> BookVehicleAsync(BookVehicleDTO request)
+        public async Task<Ride> BookVehicleAsync(BookVehicleDTO request)
         {
             Vehicle vehicle = await _dbContext.Vehicles.FindAsync(request.Id);
+
             vehicle.UserId = request.UserId;
             vehicle.RequestSend = true;
             _dbContext.Vehicles.Update(vehicle);
             await _dbContext.SaveChangesAsync();
-            return vehicle;
+
+            Ride ride = new Ride
+            {
+                UserId = request.UserId,
+                StartingLocation = request.StartingLocation,
+                EndingLocation = request.EndingLocation,
+                TotalPrice = request.TotalPrice
+            };
+
+            _dbContext.Rides.Add(ride);
+            await _dbContext.SaveChangesAsync();
+
+            return ride;
         }
+
 
         public async Task<Vehicle> ApproveBookVehicleAsync(BookVehicleDTO request)
         {

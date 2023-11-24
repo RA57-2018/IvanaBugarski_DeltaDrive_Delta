@@ -1,7 +1,7 @@
 export type BookVehicleType = {
   id: number;
   userId: string;
-  // startingLocation: any;
-  // endingLocation: any;
-  // totalPrice: string;
+  startingLocation: string;
+  endingLocation: string;
+  totalPrice: string;
 };

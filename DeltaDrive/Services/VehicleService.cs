@@ -24,12 +24,12 @@ namespace DeltaDrive.Services
             return await _vehicleRepository.GetVehicleByIdAsync(id);
         }
 
-        public async Task<IEnumerable<Ride>> GetHistoryAsync()
+        public async Task<IEnumerable<Ride>> GetHistoryAsync(String id)
         {
-            return await _vehicleRepository.GetHistoryAsync();
+            return await _vehicleRepository.GetHistoryAsync(id);
         }
 
-        public async Task<Vehicle> BookVehicleAsync(BookVehicleDTO request)
+        public async Task<Ride> BookVehicleAsync(BookVehicleDTO request)
         {
             return await _vehicleRepository.BookVehicleAsync(request);
         }

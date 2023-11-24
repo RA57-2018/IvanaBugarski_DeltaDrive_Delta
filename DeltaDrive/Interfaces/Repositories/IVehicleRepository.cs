@@ -7,8 +7,8 @@ namespace DeltaDrive.Interfaces.Repositories
     {
         Task<IEnumerable<Vehicle>> GetAllVehiclesAsync();
         Task<Vehicle> GetVehicleByIdAsync(int id);
-        Task<IEnumerable<Ride>> GetHistoryAsync();
-        Task<Vehicle> BookVehicleAsync(BookVehicleDTO request);
+        Task<IEnumerable<Ride>> GetHistoryAsync(String id);
+        Task<Ride> BookVehicleAsync(BookVehicleDTO request);
         Task<Vehicle> ApproveBookVehicleAsync(BookVehicleDTO request);
     }
 }

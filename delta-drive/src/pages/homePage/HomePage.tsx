@@ -40,7 +40,10 @@ export const HomePage = () => {
       successToast({ title: t('successfulBookVehicle', { response }) });
       console.log(response);
     },
-    onError: () => {
+    onError: (error: any) => {
+      if (error === 'ERR_BAD_REQUEST') {
+        errorToast({ title: t('driverRejectedRequest')});
+      }
       errorToast({ title: t('unsuccessfulBookVehicle') });
     }
   });
@@ -138,11 +141,12 @@ export const HomePage = () => {
     const payload = {
       id: bookVehicleValues.id,
       userId: bookVehicleValues.userId,
-      // startingLocation: bookVehicleValues.startingLocation,
-      // endingLocation: bookVehicleValues.endingLocation,
-      // totalPrice: bookVehicleValues.totalPrice,
+      startingLocation: bookVehicleValues.startingLocation,
+      endingLocation: bookVehicleValues.endingLocation,
+      totalPrice: bookVehicleValues.totalPrice,
     };
     bookVehicle(payload);
+    console.log(payload);
   };
 
   // useEffect(() => {
@@ -254,7 +258,14 @@ export const HomePage = () => {
                     ml={3}
                     mb={3}
                     cursor='pointer'
-                    onClick={() => handleBookVehicle({id: vehicle.id, userId: currentUser.id})}>
+                    onClick={() =>
+                      handleBookVehicle({
+                        id: vehicle.id,
+                        userId: currentUser.id,
+                        startingLocation: JSON.stringify(position),
+                        endingLocation: JSON.stringify(destination),
+                        totalPrice: JSON.stringify(vehicle.totalPrice)
+                      })}>
                     {t('bookVehicle')}
                   </Button>
                 </GridItem>
