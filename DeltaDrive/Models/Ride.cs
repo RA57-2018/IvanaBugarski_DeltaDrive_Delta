@@ -10,5 +10,7 @@
         public User User { get; set; }
         public Boolean IsDeleted { get; set; }
         public Boolean IsEnded { get; set; }
+        public String FirstName { get; set; }
+        public String LastName { get; set; }
     }
 }

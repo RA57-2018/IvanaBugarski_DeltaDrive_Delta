@@ -2,14 +2,14 @@ import axios from 'axios';
 import { QueryClient, useMutation, useQuery } from '@tanstack/react-query';
 
 import { apiUrl } from '@/helpers';
-import { BookVehicleType, FeedbackType, Options } from '@/types';
+import { BookVehicleType, FeedbackType, FinishType, Options } from '@/types';
 
 const VEHICLE_QUERY_KEY = 'vehicle';
 const VEHICLE_ID_QUERY_KEY = 'vehicleId';
 
 export const vehiclesApi = {
-  approveBookVehicle: (payload: BookVehicleType) => axios.post(`${apiUrl()}/approveBookVehicle`, payload),
   bookVehicle: (payload: BookVehicleType) => axios.post(`${apiUrl()}/bookVehicle`, payload),
+  finishRide: (payload: FinishType) => axios.post(`${apiUrl()}/finishRide`, payload),
   getAllVehicles: () => axios.get(`${apiUrl()}/getAllVehicles`),
   getHistoryData: (id: string) => axios.get(`${apiUrl()}/getHistory/${id}`),
   getVehiclesById: (id: string) => axios.get(`${apiUrl()}/getVehiclesById/${id}`),
@@ -18,6 +18,18 @@ export const vehiclesApi = {
 
 export const useBookVehicleMutation = (queryClient: QueryClient, options: Options) => {
   return useMutation(vehiclesApi.bookVehicle, {
+    onSuccess: (response) => {
+      options.onSuccess(response);
+      queryClient.invalidateQueries([VEHICLE_QUERY_KEY]);
+    },
+    onError: (error) => {
+      options.onError(error);
+    }
+  });
+};
+
+export const useFinishRideMutation = (queryClient: QueryClient, options: Options) => {
+  return useMutation(vehiclesApi.finishRide, {
     onSuccess: (response) => {
       options.onSuccess(response);
       queryClient.invalidateQueries([VEHICLE_QUERY_KEY]);

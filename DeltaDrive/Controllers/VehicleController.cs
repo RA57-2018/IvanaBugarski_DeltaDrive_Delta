@@ -79,11 +79,24 @@ namespace DeltaDrive.Controllers
         [HttpPost("/sendFeedback")]
         public async Task<IActionResult> AddCommentAsync([FromBody] CommentDTO request)
         {
-            Console.WriteLine($"Received request");
             try
             {
                 var comment = await _commentService.AddCommentAsync(request.Rating, request.Content, request.RideId);
                 return Ok(comment);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+        [HttpPost("/finishRide")]
+        public async Task<IActionResult> FinishRideAsync([FromBody] RideDTO rideDto)
+        {
+            try
+            {
+                var ride = await _vehicleService.FinishRideAsync(rideDto.RideId);
+                return Ok(ride);
             }
             catch (Exception ex)
             {

@@ -49,44 +49,54 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
         <Spacer />
         <>
           {currentUser ? (
-            <Popover>
-              <PopoverTrigger>
-                <Button variant='unstyled'>
-                  <Avatar
-                    bg='blue.500'
-                    textColor='white'
-                    size='full'
-                    fontSize='2.3em'
-                    name={`${currentUser?.firstName} ${currentUser?.lastName}`}
-                  />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent w='auto' minW='250px' m='5px' bg='blue.300'>
-                <PopoverArrow bg='blue.300' />
-                <PopoverBody>
-                  <VStack>
+            <>
+              <Button
+                mr='2'
+                bg='blue.500'
+                _hover={{ bg: 'blue.400' }}
+                textColor='white'
+                onClick={() => navigate('/historyPage')}>
+                {t('history')}
+              </Button>
+              <Popover>
+                <PopoverTrigger>
+                  <Button variant='unstyled'>
                     <Avatar
                       bg='blue.500'
                       textColor='white'
-                      size='lg'
+                      size='full'
+                      fontSize='2.3em'
                       name={`${currentUser?.firstName} ${currentUser?.lastName}`}
-                      cursor='pointer'
-                      onClick={() => navigate('/historyPage')}
                     />
-                    <Info textColor='white'>{`${currentUser?.firstName} ${currentUser?.lastName}`}</Info>
-                  </VStack>
-                </PopoverBody>
-                <PopoverFooter display='flex' justifyContent='space-around'>
-                  <Button
-                    bg='blue.500'
-                    _hover={{bg: 'blue.400'}}
-                    textColor='white'
-                    onClick={logout}>
-                    {t('logout')}
                   </Button>
-                </PopoverFooter>
-              </PopoverContent>
-            </Popover>
+                </PopoverTrigger>
+                <PopoverContent w='auto' minW='250px' m='5px' bg='blue.300'>
+                  <PopoverArrow bg='blue.300' />
+                  <PopoverBody>
+                    <VStack>
+                      <Avatar
+                        bg='blue.500'
+                        textColor='white'
+                        size='lg'
+                        name={`${currentUser?.firstName} ${currentUser?.lastName}`}
+                        cursor='pointer'
+                        onClick={() => navigate('/historyPage')}
+                      />
+                      <Info textColor='white'>{`${currentUser?.firstName} ${currentUser?.lastName}`}</Info>
+                    </VStack>
+                  </PopoverBody>
+                  <PopoverFooter display='flex' justifyContent='space-around'>
+                    <Button
+                      bg='blue.500'
+                      _hover={{ bg: 'blue.400' }}
+                      textColor='white'
+                      onClick={logout}>
+                      {t('logout')}
+                    </Button>
+                  </PopoverFooter>
+                </PopoverContent>
+              </Popover>
+            </>
           ) : (
             <>
               <Button

@@ -9,6 +9,6 @@ namespace DeltaDrive.Interfaces.Services
         Task<Vehicle> GetVehicleByIdAsync(int id);
         Task<IEnumerable<Ride>> GetHistoryAsync(String id);
         Task<Ride> BookVehicleAsync(BookVehicleDTO request);
-        Task<Vehicle> ApproveBookVehicleAsync(BookVehicleDTO request);
+        Task<Ride> FinishRideAsync(int rideId);
     }
 }

@@ -1,16 +1,15 @@
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { getI18n, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import { Marker, MapContainer, TileLayer, Popup } from 'react-leaflet';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, Grid, GridItem, Text as Info, Spinner } from '@chakra-ui/react';
-import L from 'leaflet';
-import { HubConnectionBuilder } from '@microsoft/signalr';
-
-import { DefaultMarkerIcon, RedMarkerIcon, VehicleMarkerIcon, calculateDistance, initialAxiosResponse, useErrorToast, useSuccessToast } from '@/helpers';
-import { UserContext } from '@/contexts';
-import { useBookVehicleMutation, useGetAllVehiclesQuery } from '@/services';
-import { useQueryClient } from '@tanstack/react-query';
 import { AxiosResponse } from 'axios';
+import { Box, Button, Grid, GridItem, Text as Info } from '@chakra-ui/react';
+import L from 'leaflet';
+import { useQueryClient } from '@tanstack/react-query';
+
+import { UserContext } from '@/contexts';
+import { DefaultMarkerIcon, RedMarkerIcon, VehicleMarkerIcon, calculateDistance, initialAxiosResponse, useErrorToast, useSuccessToast } from '@/helpers';
+import { useBookVehicleMutation, useGetAllVehiclesQuery } from '@/services';
 import { BookVehicleType } from '@/types';
 
 export const HomePage = () => {
@@ -29,8 +28,6 @@ export const HomePage = () => {
 
   L.Marker.prototype.options.icon = DefaultMarkerIcon;
   const myAPIKey = 'b6618ad7359b4f779daeae7e35233c67';
-  const isSearched = false;
-  //const orsApiKey = '5b3ce3597851110001cf6248e367516454a345f48b0ed339fd4612c3';
 
   const { data: csvData = initialAxiosResponse, isLoading } = useGetAllVehiclesQuery();
   console.log(csvData);
@@ -96,12 +93,12 @@ export const HomePage = () => {
           setPosition({ lat: latitude, lng: longitude });
         },
         (error) => {
-          console.error('Error getting location:', error);
+          console.error(t('locationError'), error);
         }
       );
       return () => navigator.geolocation.clearWatch(watchId);
     } else {
-      console.error('Geolocation is not supported by your browser');
+      console.error(t('geolocationError'));
     }
   }, []);
 
@@ -144,9 +141,10 @@ export const HomePage = () => {
       startingLocation: bookVehicleValues.startingLocation,
       endingLocation: bookVehicleValues.endingLocation,
       totalPrice: bookVehicleValues.totalPrice,
+      firstName: bookVehicleValues.firstName,
+      lastName: bookVehicleValues.lastName
     };
     bookVehicle(payload);
-    console.log(payload);
   };
 
   // useEffect(() => {
@@ -264,7 +262,9 @@ export const HomePage = () => {
                         userId: currentUser.id,
                         startingLocation: JSON.stringify(position),
                         endingLocation: JSON.stringify(destination),
-                        totalPrice: JSON.stringify(vehicle.totalPrice)
+                        totalPrice: JSON.stringify(vehicle.totalPrice),
+                        firstName: vehicle.firstName,
+                        lastName: vehicle.lastName
                       })}>
                     {t('bookVehicle')}
                   </Button>
@@ -285,38 +285,6 @@ export const HomePage = () => {
             onClick={() => navigate('/historyPage')}>
             {t('history')}
           </Button>
-          {isSearched && (
-            <>
-              <Button
-                type='button'
-                minW='100px'
-                size='lg'
-                top='15px'
-                textColor='white'
-                bg='blue.600'
-                _hover={{ bg: 'blue.400' }}
-                ml={3}
-                mb={3}
-                cursor='pointer'
-                onClick={() => navigate('/feedback')}>
-                {t('feedback')}
-              </Button>
-              <Button
-                type='button'
-                minW='100px'
-                size='lg'
-                top='15px'
-                textColor='white'
-                bg='blue.600'
-                _hover={{ bg: 'blue.400' }}
-                ml={3}
-                mb={3}
-                cursor='pointer'
-                onClick={() => navigate('/historyPage')}>
-                {t('history')}
-              </Button>
-            </>
-          )}
         </>
       ) : (
         <Info fontSize='xxx-large' textColor='blue.800'>{t('welcomeToDeltaDrive')}</Info>

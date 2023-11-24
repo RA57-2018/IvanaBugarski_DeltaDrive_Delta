@@ -9,5 +9,7 @@ namespace DeltaDrive.Dto
         public String StartingLocation { get; set; }
         public String EndingLocation { get; set; }
         public String TotalPrice { get; set; }
+        public String FirstName { get; set; }
+        public String LastName { get; set; }
     }
 }

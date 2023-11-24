@@ -38,6 +38,7 @@ namespace DeltaDrive.Repositories
 
             vehicle.UserId = request.UserId;
             vehicle.RequestSend = true;
+            vehicle.Available = false;
             _dbContext.Vehicles.Update(vehicle);
             await _dbContext.SaveChangesAsync();
 
@@ -46,7 +47,9 @@ namespace DeltaDrive.Repositories
                 UserId = request.UserId,
                 StartingLocation = request.StartingLocation,
                 EndingLocation = request.EndingLocation,
-                TotalPrice = request.TotalPrice
+                TotalPrice = request.TotalPrice,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
             };
 
             _dbContext.Rides.Add(ride);
@@ -55,13 +58,17 @@ namespace DeltaDrive.Repositories
             return ride;
         }
 
-
-        public async Task<Vehicle> ApproveBookVehicleAsync(BookVehicleDTO request)
+        public async Task<Ride> FinishRideAsync(int rideId)
         {
-            Vehicle vehicle = new Vehicle();
-            vehicle.UserId = request.UserId;
+            Ride ride = await _dbContext.Rides.FindAsync(rideId);
+            Vehicle vehicle = await _dbContext.Vehicles.Where(x => x.firstName == ride.FirstName && x.lastName == ride.LastName).FirstOrDefaultAsync();
+            ride.IsEnded = true;
+            _dbContext.Rides.Update(ride);
+            await _dbContext.SaveChangesAsync();
             vehicle.Available = true;
-            return vehicle;
+            _dbContext.Vehicles.Update(vehicle);
+            await _dbContext.SaveChangesAsync();
+            return ride;
         }
     }
 }

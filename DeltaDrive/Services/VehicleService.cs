@@ -34,9 +34,9 @@ namespace DeltaDrive.Services
             return await _vehicleRepository.BookVehicleAsync(request);
         }
 
-        public async Task<Vehicle> ApproveBookVehicleAsync(BookVehicleDTO request)
+        public async Task<Ride> FinishRideAsync(int rideId)
         {
-            return await _vehicleRepository.ApproveBookVehicleAsync(request);
+            return await _vehicleRepository.FinishRideAsync(rideId);
         }
     }
 }

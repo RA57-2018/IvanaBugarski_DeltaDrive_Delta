@@ -7,9 +7,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import * as Yup from 'yup';
 
 import { CustomInput } from '@/components';
-import { UserRegistration } from '@/types';
-import { useRegisterUserMutation } from '@/services';
 import { useErrorToast, useSuccessToast } from '@/helpers';
+import { useRegisterUserMutation } from '@/services';
+import { UserRegistration } from '@/types';
 
 export const RegistrationPage = () => {
   const [t] = useTranslation('common');
@@ -19,10 +19,10 @@ export const RegistrationPage = () => {
 
   const { mutate: register } = useRegisterUserMutation(queryClient, {
     onSuccess: (response?: AxiosResponse) => {
-      successToast({ title: t('successfulEditUser', { response }) });
+      successToast({ title: t('successfulRegistration', { response }) });
     },
     onError: () => {
-      errorToast({ title: t('unsuccessfulEditUser') });
+      errorToast({ title: t('unsuccessfulRegistration') });
     }
   });
 
