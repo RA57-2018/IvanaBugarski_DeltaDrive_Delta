@@ -66,6 +66,7 @@ namespace DeltaDrive.Repositories
             _dbContext.Rides.Update(ride);
             await _dbContext.SaveChangesAsync();
             vehicle.Available = true;
+            vehicle.RequestSend = false;
             _dbContext.Vehicles.Update(vehicle);
             await _dbContext.SaveChangesAsync();
             return ride;

@@ -5,6 +5,7 @@
     "brand": "Brand",
     "confirmPassword": "Confirm password",
     "deltaDrive": "Delta Drive",
+    "distanceFromPassenger": "Distance from passenger",
     "driver": "Driver",
     "driverRejectedRequest": "Driver rejected booking vehicle!",
     "endingLocation": "Ending location",
@@ -45,5 +46,6 @@
     "unsuccessfulBookVehicle": "Vehicle was booked unsuccessfully!",
     "unsuccessfulRegistration": "Registartion was unsusccessful!",
     "unsuccessfulRideFinish": "Ride is not finished successfully!",
+    "viewBookedVehicle": "View booked vehicle",
     "welcomeToDeltaDrive": "Welcome to Delta Drive"
 }

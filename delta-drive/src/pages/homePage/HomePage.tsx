@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { AxiosResponse } from 'axios';
 import { Box, Button, Grid, GridItem, Text as Info } from '@chakra-ui/react';
 import L from 'leaflet';
+import { HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { UserContext } from '@/contexts';
@@ -21,6 +22,10 @@ export const HomePage = () => {
   const [destination, setDestination] = useState({lat: 45.255930, lng: 19.846320});
   const [nearestAvailableVehicles, setNearestAvailableVehicles] = useState<any>();
   const [position, setPosition] = useState({ lat: 45.2428032, lng: 19.849218322071287 });
+  const [currentLocationAddress, setCurrentLocationAddress] = useState('');
+  const [destinationAddress, setDestinationAddress] = useState('');
+  const [signalRConnection, setSignalRConnection] = useState<any>(null);
+  const [connection, setConnection] = useState<any>(null);
   const { currentUser } = useContext(UserContext);
   const successToast = useSuccessToast();
   const errorToast = useErrorToast();
@@ -45,6 +50,32 @@ export const HomePage = () => {
     }
   });
 
+  const getNearestAvailableVehicles = (destinationLatLng: any) => {
+    const currentLatLng = { lat: position.lat, lng: position.lng };
+    const availableVehicles = csvData?.data?.filter((c: any) => c.available === true);
+    console.log(availableVehicles);
+    if (availableVehicles) {
+      const vehiclesWithDistances = availableVehicles?.map((vehicle: any) => {
+        const distanceToCurrentLocation = calculateDistance(currentLatLng, {
+          lat: parseFloat(vehicle.latitude),
+          lng: parseFloat(vehicle.longitude),
+        });
+        const distanceToDestination = calculateDistance(
+          { lat: parseFloat(vehicle.latitude), lng: parseFloat(vehicle.longitude) },
+          destinationLatLng
+        );
+        const startPrice = parseFloat(vehicle.startPrice);
+        const pricePerKM = parseFloat(vehicle.pricePerKM);
+        const totalPrice = startPrice + (distanceToDestination / 1000) * pricePerKM;
+        return { ...vehicle, distanceToCurrentLocation, distanceToDestination, totalPrice };
+      });
+      vehiclesWithDistances.sort((a: any, b: any) => a.distanceToCurrentLocation - b.distanceToCurrentLocation);
+      const nearestVehicles = vehiclesWithDistances.slice(0, 10);
+      setNearestAvailableVehicles(nearestVehicles);
+      console.log(nearestAvailableVehicles);
+    }
+  };
+
   const eventHandlers = useMemo(
     () => ({
       dragend() {
@@ -64,6 +95,7 @@ export const HomePage = () => {
       if (marker !== null) {
         const destinationPosition = marker.getLatLng();
         setDestination(destinationPosition);
+        getNearestAvailableVehicles(destinationPosition);
         const userLatLng = L.latLng(position.lat, position.lng);
         const destinationLatLng = L.latLng(destinationPosition.lat, destinationPosition.lng);
         const distance = userLatLng.distanceTo(destinationLatLng);
@@ -102,38 +134,6 @@ export const HomePage = () => {
     }
   }, []);
 
-  const getNearestAvailableVehicles = (destinationLatLng: any) => {
-    const currentLatLng = { lat: position.lat, lng: position.lng };
-    const availableVehicles = csvData?.data?.filter((c: any) => c.available === true);
-    console.log(availableVehicles);
-    if (availableVehicles) {
-      const vehiclesWithDistances = availableVehicles?.map((vehicle: any) => {
-        const distanceToCurrentLocation = calculateDistance(currentLatLng, {
-          lat: parseFloat(vehicle.latitude),
-          lng: parseFloat(vehicle.longitude),
-        });
-        const distanceToDestination = calculateDistance(
-          { lat: parseFloat(vehicle.latitude), lng: parseFloat(vehicle.longitude) },
-          destinationLatLng
-        );
-        const startPrice = parseFloat(vehicle.startPrice);
-        const pricePerKM = parseFloat(vehicle.pricePerKM);
-        const totalPrice = startPrice + (distanceToDestination / 1000) * pricePerKM;
-        return { ...vehicle, distanceToCurrentLocation, distanceToDestination, totalPrice };
-      });
-      vehiclesWithDistances.sort((a: any, b: any) => a.distanceToCurrentLocation - b.distanceToCurrentLocation);
-      const nearestVehicles = vehiclesWithDistances.slice(0, 10);
-      setNearestAvailableVehicles(nearestVehicles);
-      console.log(nearestAvailableVehicles);
-    }
-  };
-
-  useEffect(() => {
-    if (destination) {
-      getNearestAvailableVehicles(destination);
-    }
-  }, [destination]);
-
   const handleBookVehicle = (bookVehicleValues: BookVehicleType) => {
     const payload = {
       id: bookVehicleValues.id,
@@ -144,25 +144,70 @@ export const HomePage = () => {
       firstName: bookVehicleValues.firstName,
       lastName: bookVehicleValues.lastName
     };
+    localStorage.setItem('driverId', bookVehicleValues.firstName + bookVehicleValues.lastName);
     bookVehicle(payload);
   };
 
+  useEffect(() => {
+    if (position) {
+      const reverseGeocodingUrl = `https://api.geoapify.com/v1/geocode/reverse?lat=${position.lat}&lon=${position.lng}&apiKey=${myAPIKey}`;
+      fetch(reverseGeocodingUrl)
+        .then((result) => result.json())
+        .then((featureCollection) => {
+          const address = featureCollection.features[0]?.properties?.formatted || 'Address not found';
+          setCurrentLocationAddress(address);
+        })
+        .catch((reverseGeocodingError) => {
+          console.error('Error in reverse geocoding:', reverseGeocodingError);
+        });
+    }
+  }, [position, myAPIKey]);
+
+  useEffect(() => {
+    if (destination) {
+      const reverseGeocodingUrl = `https://api.geoapify.com/v1/geocode/reverse?lat=${destination.lat}&lon=${destination.lng}&apiKey=${myAPIKey}`;
+      fetch(reverseGeocodingUrl)
+        .then((result) => result.json())
+        .then((featureCollection) => {
+          const address = featureCollection.features[0]?.properties?.formatted || 'Address not found';
+          setDestinationAddress(address);
+        })
+        .catch((reverseGeocodingError) => {
+          console.error('Error in reverse geocoding:', reverseGeocodingError);
+        });
+    }
+  }, [destination, myAPIKey]);
+
   // useEffect(() => {
-  //   const connection = new HubConnectionBuilder()
-  //       .withUrl('/signalRide')
-  //       .build();
-  //   connection.start().catch(err => console.error(err));
-  //   connection.on('ReceiveLocationUpdate', (driverId, latitude, longitude) => {
-  //       // Handle the location update, e.g., update the UI with the new location
-  //       console.log(`Driver ${driverId} at (${latitude}, ${longitude})`);
-  //       // Update the location of the driver on the map or perform other actions
-  //       // For example, you can update the marker position using the setPosition function
-  //       setPosition({ lat: latitude, lng: longitude });
-  //   });
+  //   const newConnection = new HubConnectionBuilder()
+  //     .withUrl('/signalRide')
+  //     .build();
+  //   newConnection.start().then(() => {
+  //     console.log('SignalR Connected');
+  //     setSignalRConnection(newConnection);
+  //     setConnection(newConnection);
+  //   }).catch((error: any) => console.error('Error starting SignalR connection:', error));
   //   return () => {
-  //       connection.stop().catch(err => console.error(err));
+  //     if (newConnection && newConnection.state === HubConnectionState.Connected) {
+  //       newConnection.stop().then(() => console.log('SignalR Connection Stopped'));
+  //     }
   //   };
   // }, []);
+
+  // useEffect(() => {
+  //   if (signalRConnection) {
+  //     signalRConnection.on('ReceiveLocationUpdate', (driverId: any, latitude: any, longitude: any) => {
+  //       setPosition({ lat: latitude, lng: longitude });
+  //       connection.invoke('UpdateDriverLocation', driverId, latitude, longitude)
+  //         .catch((error: any) => console.error('Error updating driver location:', error));
+  //     });
+  //   }
+  //   return () => {
+  //     if (signalRConnection) {
+  //       signalRConnection.off('ReceiveLocationUpdate');
+  //     }
+  //   };
+  // }, [signalRConnection, connection]);
 
   return (
     <>
@@ -221,7 +266,7 @@ export const HomePage = () => {
                 ))}
             </MapContainer>
           </Box>
-          <Grid templateColumns='repeat(3, 1fr)' gap={2} p={5}>
+          <Grid templateColumns='repeat(3, 1fr)' gap={2} p={5} mb={5}>
             {!isLoading && nearestAvailableVehicles &&
               nearestAvailableVehicles?.slice(0, 10).map((vehicle: any, index: number) => (
                 <GridItem
@@ -239,8 +284,7 @@ export const HomePage = () => {
                   <Box ml={3} fontSize={18}>
                     <Info>{t('brand')}: {vehicle.brand}</Info>
                     <Info>{t('driver')}: {vehicle.firstName} {vehicle.lastName}</Info>
-                    <Info>{t('distanceFromPassenger')}: {vehicle.distanceToCurrentLocation}</Info>
-                    <Info>{t('rating')}: {vehicle.rating}</Info>
+                    <Info>{t('distanceFromPassenger')}: {vehicle.distanceToCurrentLocation} {'m'}</Info>
                     <Info>{t('startingPrice')}: {vehicle.startPrice}</Info>
                     <Info>{t('pricePerKM')}: {vehicle.pricePerKM}</Info>
                     <Info>{t('totalPrice')}: {vehicle.totalPrice} {t('eur')}</Info>
@@ -260,8 +304,8 @@ export const HomePage = () => {
                       handleBookVehicle({
                         id: vehicle.id,
                         userId: currentUser.id,
-                        startingLocation: JSON.stringify(position),
-                        endingLocation: JSON.stringify(destination),
+                        startingLocation: currentLocationAddress,
+                        endingLocation: destinationAddress,
                         totalPrice: JSON.stringify(vehicle.totalPrice),
                         firstName: vehicle.firstName,
                         lastName: vehicle.lastName
@@ -271,20 +315,6 @@ export const HomePage = () => {
                 </GridItem>
               ))}
           </Grid>
-          <Button
-            type='button'
-            minW='100px'
-            size='lg'
-            top='15px'
-            bg='blue.600'
-            textColor='white'
-            _hover={{ bg: 'blue.400' }}
-            ml={3}
-            mb={3}
-            cursor='pointer'
-            onClick={() => navigate('/historyPage')}>
-            {t('history')}
-          </Button>
         </>
       ) : (
         <Info fontSize='xxx-large' textColor='blue.800'>{t('welcomeToDeltaDrive')}</Info>

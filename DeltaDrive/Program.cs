@@ -43,7 +43,9 @@ builder.Services.AddTransient<ICommentService, CommentService>();
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IVehicleService, VehicleService>();
 
-builder.Services.AddHttpClient("ServiceOneNotify");
+//builder.Services.AddHttpClient("ServiceOneNotify");
+
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -96,8 +98,6 @@ try
         }
     }
 }
-
-   //builder.Services.AddSignalR();
 
     app.UseCors("AllowAll");
 

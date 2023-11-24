@@ -57,8 +57,9 @@ export const Feedback = (props: FeedbackProps) => {
         display='flex'
         alignItems='center'
         justifyContent='center'
-        mt={5}>
-        <Box boxShadow='2xl' backgroundColor='blue.300' borderRadius='10' padding='2%' textColor='white'>
+        mt={5}
+        mb={5}>
+        <Box boxShadow='2xl' backgroundColor='blue.300' borderRadius='10' padding='2%' textColor='white' w='full'>
           <Formik
             validateOnMount
             validateOnChange
