@@ -22,11 +22,6 @@ export const App = () => {
               <Route path='/historyPage' element={<HistoryPage />} />
             </Route>
           )}
-          {currentUser.roleId === 2 && (
-            <Route>
-              <Route path='/historyPage' element={<HistoryPage />} />
-            </Route>
-          )}
           <Route path='*' element={<Navigate to='/homePage' replace />} />
         </Routes>
       </Layout>

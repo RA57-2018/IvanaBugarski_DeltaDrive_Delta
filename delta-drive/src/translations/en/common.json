@@ -6,6 +6,7 @@
     "confirmPassword": "Confirm password",
     "deltaDrive": "Delta Drive",
     "driver": "Driver",
+    "driverRejectedRequest": "Driver rejected booking vehicle!",
     "endingLocation": "Ending location",
     "email": "Email",
     "emailInvalid": "Email is invalid",
@@ -34,6 +35,8 @@
     "startPrice": "Start price",
     "startingLocation": "Starting location",
     "startingPrice": "Starting price",
+    "successfulBookVehicle": "Vehicle booked successfully!",
     "totalPrice": "Total price",
+    "unsuccessfulBookVehicle": "Vehicle was booked unsuccessfully!",
     "welcomeToDeltaDrive": "Welcome to Delta Drive"
 }

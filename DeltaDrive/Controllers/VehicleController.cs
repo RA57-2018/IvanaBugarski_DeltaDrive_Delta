@@ -11,6 +11,7 @@ namespace DeltaDrive.Controllers
     {
         private readonly ICommentService _commentService;
         private readonly IVehicleService _vehicleService;
+        private readonly Random _random = new Random();
 
         public VehicleController(ICommentService commentService, IVehicleService vehicleService)
         {
@@ -26,7 +27,7 @@ namespace DeltaDrive.Controllers
         }
 
         [HttpGet("/getVehiclesById/{id}")]
-        public async Task<IActionResult> GetVehicleByIdAsync(String id)
+        public async Task<IActionResult> GetVehicleByIdAsync(int id)
         {
             try
             {
@@ -58,21 +59,15 @@ namespace DeltaDrive.Controllers
         {
             try
             {
-                var bookVehicle = await _vehicleService.BookVehicleAsync(request);
-                return Ok(bookVehicle);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error");
-            }
-        }
+                // Simulate a 25% chance of rejection
+                bool isRejected = _random.Next(0, 100) < 25;
 
-        [HttpPost("/approveBookVehicle")]
-        public async Task<IActionResult> ApproveBookVehicleAsync([FromBody] BookVehicleDTO request)
-        {
-            try
-            {
-                var bookVehicle = await _vehicleService.ApproveBookVehicleAsync(request);
+                if (isRejected)
+                {
+                    return BadRequest("Driver rejected the request");
+                }
+
+                var bookVehicle = await _vehicleService.BookVehicleAsync(request);
                 return Ok(bookVehicle);
             }
             catch (Exception ex)

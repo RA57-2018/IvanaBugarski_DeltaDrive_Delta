@@ -4,17 +4,15 @@ import { QueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { apiUrl } from '@/helpers';
 import { BookVehicleType, FeedbackType, Options } from '@/types';
 
-const VEHICLE_API_URL = '';
-
 const VEHICLE_QUERY_KEY = 'vehicle';
 const VEHICLE_ID_QUERY_KEY = 'vehicleId';
 
 export const vehiclesApi = {
-  approveBookVehicle: (payload: BookVehicleType) => axios.post(`${apiUrl()}${VEHICLE_API_URL}/approveBookVehicle`, payload),
-  bookVehicle: (payload: BookVehicleType) => axios.post(`${apiUrl()}${VEHICLE_API_URL}/bookVehicle`, payload),
-  getAllVehicles: () => axios.get(`${apiUrl()}${VEHICLE_API_URL}/getAllVehicles`),
-  getHistoryData: () => axios.get(`${apiUrl()}${VEHICLE_API_URL}/getHistory`),
-  getVehiclesById: (id: string) => axios.get(`${apiUrl()}${VEHICLE_API_URL}/getVehiclesById/${id}`),
+  approveBookVehicle: (payload: BookVehicleType) => axios.post(`${apiUrl()}/approveBookVehicle`, payload),
+  bookVehicle: (payload: BookVehicleType) => axios.post(`${apiUrl()}/bookVehicle`, payload),
+  getAllVehicles: () => axios.get(`${apiUrl()}/getAllVehicles`),
+  getHistoryData: () => axios.get(`${apiUrl()}/getHistory`),
+  getVehiclesById: (id: string) => axios.get(`${apiUrl()}/getVehiclesById/${id}`),
   sendFeedback: (payload: FeedbackType) => axios.post(`${apiUrl()}/sendFeedback`, payload)
 };
 

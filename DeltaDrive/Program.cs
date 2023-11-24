@@ -4,6 +4,13 @@ using DeltaDrive.Interfaces.Services;
 using DeltaDrive.Repositories;
 using DeltaDrive.Services;
 using Microsoft.EntityFrameworkCore;
+using CsvHelper;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using DeltaDrive.Models;
+using Microsoft.Extensions.DependencyInjection;
+using CsvHelper.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,6 +62,43 @@ try
         app.UseHsts();
     }
 
+   using (var reader = new StreamReader("delta-drive.csv"))
+{
+    using (var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)))
+    {
+        csv.Context.RegisterClassMap<DataMap>();
+        var records = csv.GetRecords<Vehicle>().Take(1000).ToList();
+
+        using (var scope = app.Services.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+
+            foreach (var dataRecord in records)
+            {
+                var vehicle = new Vehicle
+                {
+                    brand = dataRecord.brand,
+                    firstName = dataRecord.firstName,
+                    lastName = dataRecord.lastName,
+                    latitude = dataRecord.latitude,
+                    longitude = dataRecord.longitude,
+                    startPrice = dataRecord.startPrice,
+                    pricePerKM = dataRecord.pricePerKM,
+                    IsDeleted = false,
+                    UserId = "default",
+                    RequestSend = false
+                };
+                vehicle.SetAvailableRandomly();
+                dbContext.Vehicles.Add(vehicle);
+            }
+
+            dbContext.SaveChanges();
+        }
+    }
+}
+
+   //builder.Services.AddSignalR();
+
     app.UseCors("AllowAll");
 
     app.UseRouting();
@@ -68,6 +112,7 @@ try
 
     app.UseEndpoints(endpoints =>
     {
+        //endpoints.MapHub<SignalRide>("/signalRide");
         endpoints.MapControllers();
     });
 

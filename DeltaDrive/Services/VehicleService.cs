@@ -19,7 +19,7 @@ namespace DeltaDrive.Services
             return await _vehicleRepository.GetAllVehiclesAsync();
         }
 
-        public async Task<Vehicle> GetVehicleByIdAsync(String id)
+        public async Task<Vehicle> GetVehicleByIdAsync(int id)
         {
             return await _vehicleRepository.GetVehicleByIdAsync(id);
         }

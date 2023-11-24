@@ -12,6 +12,7 @@ namespace DeltaDrive.Database
         public DbSet<Vehicle> Vehicles { get; set; }
         public DbSet<Ride> Rides { get; set; }
         public DbSet<Location> Locations { get; set; }
+        public DbSet<Data> Data { get; set; }
 
         public MyDbContext(DbContextOptions<MyDbContext> options) : base(options) { }
 
@@ -26,9 +27,10 @@ namespace DeltaDrive.Database
         {
             modelBuilder.Entity<Comment>().HasQueryFilter(m => !m.IsDeleted);
             modelBuilder.Entity<User>().HasQueryFilter(m => !m.IsDeleted);
-            modelBuilder.Entity<Vehicle>().HasQueryFilter(m => !m.IsDeleted);
-            modelBuilder.Entity<Ride>().HasQueryFilter(m => !m.IsDeleted);
+            modelBuilder.Entity<Vehicle>().HasQueryFilter(m => !m.IsDeleted).HasKey(m => m.Id);
+            modelBuilder.Entity<Ride>().HasQueryFilter(m => !m.IsDeleted).HasKey(m => m.Id);
             modelBuilder.Entity<Location>().HasQueryFilter(m => !m.IsDeleted);
+            modelBuilder.Entity<Data>().HasKey(m => m.DataId);
 
             base.OnModelCreating(modelBuilder);
         }
