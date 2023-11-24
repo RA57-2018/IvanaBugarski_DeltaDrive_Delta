@@ -82,7 +82,7 @@ namespace DeltaDrive.Controllers
             Console.WriteLine($"Received request");
             try
             {
-                var comment = await _commentService.AddCommentAsync(request.Rating, request.Content);
+                var comment = await _commentService.AddCommentAsync(request.Rating, request.Content, request.RideId);
                 return Ok(comment);
             }
             catch (Exception ex)

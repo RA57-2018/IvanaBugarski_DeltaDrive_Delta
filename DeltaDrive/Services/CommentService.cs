@@ -13,9 +13,9 @@ namespace DeltaDrive.Services
             _commentRepository = commentRepository;
         }
 
-        public async Task<Comment> AddCommentAsync(int rating, string content)
+        public async Task<Comment> AddCommentAsync(int rating, string content, int rideId)
         {
-            Comment comment = new Comment(rating, content);
+            Comment comment = new Comment(rating, content, rideId);
 
             return await _commentRepository.AddCommentAsync(comment);
         }
