@@ -50,10 +50,7 @@ export const HomePage = () => {
       successToast({ title: t('successfulBookVehicle', { response }) });
     },
     onError: (error: any) => {
-      if (error === 'ERR_BAD_REQUEST') {
-        errorToast({ title: t('driverRejectedRequest')});
-      }
-      errorToast({ title: t('unsuccessfulBookVehicle') });
+      errorToast({ title: t('driverRejectedRequest')});
     }
   });
 
