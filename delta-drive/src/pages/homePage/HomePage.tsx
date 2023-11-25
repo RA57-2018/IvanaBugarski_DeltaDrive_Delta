@@ -4,7 +4,7 @@ import { Marker, MapContainer, TileLayer, Popup } from 'react-leaflet';
 import { AxiosResponse } from 'axios';
 import { Box, Button, Grid, GridItem, Text as Info } from '@chakra-ui/react';
 import L from 'leaflet';
-//import { HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
+import { HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { UserContext } from '@/contexts';
@@ -25,13 +25,15 @@ export const HomePage = () => {
   const destinationMarkerRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
   const mapRef = useRef<any>(null);
+  const signalRConnectionRef = useRef<any>(null);
   const [destination, setDestination] = useState({lat: 45.255930, lng: 19.846320});
   const [nearestAvailableVehicles, setNearestAvailableVehicles] = useState<any>();
   const [position, setPosition] = useState({ lat: 45.2428032, lng: 19.849218322071287 });
   const [currentLocationAddress, setCurrentLocationAddress] = useState('');
   const [destinationAddress, setDestinationAddress] = useState('');
-  // const [signalRConnection, setSignalRConnection] = useState<any>(null);
-  // const [connection, setConnection] = useState<any>(null);
+  const [signalRConnection, setSignalRConnection] = useState<any>(null);
+  const [connection, setConnection] = useState<any>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
   const { currentUser } = useContext(UserContext);
   const successToast = useSuccessToast();
   const errorToast = useErrorToast();
@@ -46,7 +48,6 @@ export const HomePage = () => {
   const { mutate: bookVehicle } = useBookVehicleMutation(queryClient, {
     onSuccess: (response?: AxiosResponse) => {
       successToast({ title: t('successfulBookVehicle', { response }) });
-      console.log(response);
     },
     onError: (error: any) => {
       if (error === 'ERR_BAD_REQUEST') {
@@ -115,6 +116,7 @@ export const HomePage = () => {
       fetch(reverseGeocodingUrl)
         .then((result) => result.json())
         .then((featureCollection) => {
+          console.log(featureCollection.features[0].properties);
         })
         .catch((reverseGeocodingError) => {
           console.error('Error in reverse geocoding:', reverseGeocodingError);
@@ -153,6 +155,10 @@ export const HomePage = () => {
     bookVehicle(payload);
   };
 
+  const handleCoordinates = (lat: any, lng: any) => {
+    setSelectedVehicle({latitude: lat, longitude: lng});
+  };
+
   useEffect(() => {
     if (position) {
       const reverseGeocodingUrl = `https://api.geoapify.com/v1/geocode/reverse?lat=${position.lat}&lon=${position.lng}&apiKey=${myAPIKey}`;
@@ -183,36 +189,141 @@ export const HomePage = () => {
     }
   }, [destination, myAPIKey]);
 
-  // useEffect(() => {
-  //   const newConnection = new HubConnectionBuilder()
-  //     .withUrl('/signalRide')
-  //     .build();
-  //   newConnection.start().then(() => {
-  //     console.log('SignalR Connected');
-  //     setSignalRConnection(newConnection);
-  //     setConnection(newConnection);
-  //   }).catch((error: any) => console.error('Error starting SignalR connection:', error));
-  //   return () => {
-  //     if (newConnection && newConnection.state === HubConnectionState.Connected) {
-  //       newConnection.stop().then(() => console.log('SignalR Connection Stopped'));
-  //     }
-  //   };
-  // }, []);
+  useEffect(() => {
+    const newConnection = new HubConnectionBuilder()
+      .withUrl('http://localhost:5018/signalRide')
+      .build();
+    newConnection.on('ReceiveLocationUpdate', (driverId: any, latitude: any, longitude: any) => {
+      setSelectedVehicle((prevVehicle: any) => ({
+        ...prevVehicle,
+        latitude: parseFloat(latitude),
+        longitude: parseFloat(longitude),
+      }));
+      driverId = localStorage.getItem('driverId');
+    });
+    const startConnection = async () => {
+      try {
+        await newConnection.start();
+        console.log('SignalR Connected');
+        setSignalRConnection(connection);
+      } catch (error) {
+        console.error('Error starting SignalR connection:', error);
+      }
+    };
+    if (newConnection.state === HubConnectionState.Disconnected) {
+      startConnection();
+    }
+    return () => {
+      if (newConnection.state === HubConnectionState.Connected) {
+        newConnection.stop().then(() => console.log('SignalR Connection Stopped'));
+      }
+    };
+  }, []);
 
-  // useEffect(() => {
-  //   if (signalRConnection) {
-  //     signalRConnection.on('ReceiveLocationUpdate', (driverId: any, latitude: any, longitude: any) => {
-  //       setPosition({ lat: latitude, lng: longitude });
-  //       connection.invoke('UpdateDriverLocation', driverId, latitude, longitude)
-  //         .catch((error: any) => console.error('Error updating driver location:', error));
-  //     });
-  //   }
-  //   return () => {
-  //     if (signalRConnection) {
-  //       signalRConnection.off('ReceiveLocationUpdate');
-  //     }
-  //   };
-  // }, [signalRConnection, connection]);
+  const selectedVehicleRef = useRef(selectedVehicle);
+  const animatedVehicleMarkerRef = useRef<any>(null);
+
+  useEffect(() => {
+    selectedVehicleRef.current = selectedVehicle;
+  }, [selectedVehicle]);
+
+  useEffect(() => {
+    if (selectedVehicleRef.current && position && destination) {
+      const initialRouteCoordinates = [
+        { lat: selectedVehicleRef.current.latitude, lng: selectedVehicleRef.current.longitude },
+        { lat: position.lat, lng: position.lng },
+      ];
+
+      const finalRouteCoordinates = [
+        { lat: position.lat, lng: position.lng },
+        { lat: destination.lat, lng: destination.lng },
+      ];
+
+      const speedKmPerHour = 60;
+      const animationInterval = 100; // Set a fixed time interval for each step of the animation
+      let currentPositionIndex = 0;
+
+      const moveDriver = (routeCoordinates: any) => {
+        const nextPositionIndex = currentPositionIndex + 1;
+        if (nextPositionIndex < routeCoordinates.length) {
+          const currentPos = routeCoordinates[currentPositionIndex];
+          const nextPos = routeCoordinates[nextPositionIndex];
+          const distance = calculateDistance(currentPos, nextPos);
+          const timeInSeconds = (distance / speedKmPerHour) * 3600;
+
+          // Update the position of the animated vehicle marker
+          animatedVehicleMarkerRef.current.setLatLng(nextPos);
+
+          currentPositionIndex = nextPositionIndex;
+          setTimeout(() => moveDriver(routeCoordinates), animationInterval);
+        } else {
+          console.log('Driver reached the destination');
+        }
+      };
+
+      // Start the initial animation
+      moveDriver(initialRouteCoordinates);
+
+      // Wait for the initial animation to finish before starting the final animation
+      setTimeout(() => {
+        currentPositionIndex = 0;
+        moveDriver(finalRouteCoordinates);
+      }, initialRouteCoordinates.length * animationInterval);
+    }
+  }, [selectedVehicle, position, destination]);
+
+  useEffect(() => {
+    const newConnection = new HubConnectionBuilder()
+      .withUrl('http://localhost:5018/signalRide')
+      .build();
+    newConnection.on('ReceiveLocationUpdate', (driverId: any, latitude: any, longitude: any) => {
+      setPosition({ lat: latitude, lng: longitude });
+      driverId = localStorage.getItem('driverId');
+    });
+    const startConnection = async () => {
+      try {
+        await newConnection.start();
+        console.log('SignalR Connected');
+        setSignalRConnection(connection);
+      } catch (error) {
+        console.error('Error starting SignalR connection:', error);
+      }
+    };
+    if (newConnection.state === HubConnectionState.Disconnected) {
+      startConnection();
+    }
+    return () => {
+      if (newConnection.state === HubConnectionState.Connected) {
+        newConnection.stop().then(() => console.log('SignalR Connection Stopped'));
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (signalRConnectionRef.current) {
+      signalRConnectionRef.current.on('ReceiveLocationUpdate', (driverId: any, latitude: any, longitude: any) => {
+        setPosition({ lat: latitude, lng: longitude });
+        driverId = localStorage.getItem('driverId');
+      });
+      signalRConnectionRef.current.start().then(() => {
+        console.log('SignalR Connected');
+        setSignalRConnection(connection);
+      }).catch((error: any) => console.error('Error starting SignalR connection:', error));
+      if (signalRConnectionRef.current.state === HubConnectionState.Disconnected) {
+        signalRConnectionRef.current.start()
+          .then(() => {
+            console.log('SignalR Connected');
+            setSignalRConnection(connection);
+          })
+          .catch((error: any) => console.error('Error starting SignalR connection:', error));
+      }
+    }
+    return () => {
+      if (signalRConnectionRef.current) {
+        signalRConnectionRef.current.off('ReceiveLocationUpdate');
+      }
+    };
+  }, [signalRConnectionRef.current]);
 
   return (
     <>
@@ -253,6 +364,23 @@ export const HomePage = () => {
                   icon={RedMarkerIcon}
                 />
               )}
+              {nearestAvailableVehicles &&
+                nearestAvailableVehicles.map((data: any, index: number) => (
+                  <Marker
+                    key={index}
+                    ref={animatedVehicleMarkerRef}
+                    position={selectedVehicle ? [selectedVehicle.latitude, selectedVehicle.longitude] : [0, 0]}
+                    icon={VehicleMarkerIcon}>
+                    <Popup>
+                      <Box>
+                        <Info>{t('brand')}: {data.brand}</Info>
+                        <Info>{t('name')}: {data.firstName} {data.lastName}</Info>
+                        <Info>{t('startPrice')}: {data.startPrice}</Info>
+                        <Info>{t('pricePerKM')}: {data.pricePerKM}</Info>
+                      </Box>
+                    </Popup>
+                  </Marker>
+                ))}
               {nearestAvailableVehicles &&
                 nearestAvailableVehicles.map((data: any, index: number) => (
                   <Marker
@@ -305,7 +433,8 @@ export const HomePage = () => {
                     ml={3}
                     mb={3}
                     cursor='pointer'
-                    onClick={() =>
+                    onClick={() => {
+                      handleCoordinates(vehicle.latitude, vehicle.longitude);
                       handleBookVehicle({
                         id: vehicle.id,
                         userId: currentUser.id,
@@ -314,7 +443,8 @@ export const HomePage = () => {
                         totalPrice: JSON.stringify(vehicle.totalPrice),
                         firstName: vehicle.firstName,
                         lastName: vehicle.lastName
-                      })}>
+                      });
+                    }}>
                     {t('bookVehicle')}
                   </Button>
                 </GridItem>

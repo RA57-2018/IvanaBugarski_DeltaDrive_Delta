@@ -5,19 +5,22 @@ using DeltaDrive.Repositories;
 using DeltaDrive.Services;
 using Microsoft.EntityFrameworkCore;
 using CsvHelper;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using DeltaDrive.Models;
-using Microsoft.Extensions.DependencyInjection;
 using CsvHelper.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-        builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+    options.AddPolicy("CorsPolicy", builder =>
+    {
+        builder
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .WithOrigins("http://localhost:3000")
+            .AllowCredentials();
+    });
 });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -99,7 +102,7 @@ try
     }
 }
 
-    app.UseCors("AllowAll");
+    app.UseCors("CorsPolicy");
 
     app.UseRouting();
 
@@ -112,7 +115,7 @@ try
 
     app.UseEndpoints(endpoints =>
     {
-        //endpoints.MapHub<SignalRide>("/signalRide");
+        endpoints.MapHub<SignalRide>("/signalRide");
         endpoints.MapControllers();
     });
 

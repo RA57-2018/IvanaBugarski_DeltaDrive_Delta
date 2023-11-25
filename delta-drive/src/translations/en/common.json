@@ -24,6 +24,7 @@
     "lastNameRequired": "Last name is required",
     "locationError": "Error getting location:",
     "login": "Login",
+    "logout": "Logout",
     "max5": "Maximum is 5",
     "min1": "Minimum is 1",
     "name": "Name",
