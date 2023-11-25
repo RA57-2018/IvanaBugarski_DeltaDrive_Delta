@@ -251,7 +251,6 @@ export const HomePage = () => {
           const distance = calculateDistance(currentPos, nextPos);
           const timeInSeconds = (distance / speedKmPerHour) * 3600;
 
-          // Update the position of the animated vehicle marker
           animatedVehicleMarkerRef.current.setLatLng(nextPos);
 
           currentPositionIndex = nextPositionIndex;
@@ -260,11 +259,7 @@ export const HomePage = () => {
           console.log('Driver reached the destination');
         }
       };
-
-      // Start the initial animation
       moveDriver(initialRouteCoordinates);
-
-      // Wait for the initial animation to finish before starting the final animation
       setTimeout(() => {
         currentPositionIndex = 0;
         moveDriver(finalRouteCoordinates);
